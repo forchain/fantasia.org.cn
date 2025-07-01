@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import AlbumGrid from '$lib/components/AlbumGrid.svelte';
-  import { albums, albumsCount, totalPhotosCount } from '$lib/stores/albums.js';
+  import { albums, albumsCount, totalPhotosCount } from '$lib/stores/albums';
 
   // Hero section state
   let heroVisible = true;
@@ -81,7 +81,9 @@
             href="#albums" 
             class="btn-primary px-8 py-3 text-base"
             on:click={() => {
-              document.getElementById('albums')?.scrollIntoView({ behavior: 'smooth' });
+              if (typeof document !== 'undefined') {
+                document.getElementById('albums')?.scrollIntoView({ behavior: 'smooth' });
+              }
             }}
           >
             Explore Albums
@@ -202,18 +204,4 @@
   </section>
 {/if}
 
-<style>
-  /* Custom animations for hero elements */
-  @keyframes float {
-    0%, 100% {
-      transform: translateY(0px);
-    }
-    50% {
-      transform: translateY(-10px);
-    }
-  }
-  
-  .animate-float {
-    animation: float 6s ease-in-out infinite;
-  }
-</style> 
+ 

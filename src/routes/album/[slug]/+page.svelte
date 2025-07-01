@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import PhotoCard from '$lib/components/PhotoCard.svelte';
-  import { currentAlbum, currentAlbumLoading, currentAlbumError, loadAlbum } from '$lib/stores/albums.js';
+  import { currentAlbum, currentAlbumLoading, currentAlbumError, loadAlbum } from '$lib/stores/albums';
   import { ChevronLeft, Calendar, Camera, MapPin } from 'lucide-svelte';
 
   // Get album slug from URL parameters

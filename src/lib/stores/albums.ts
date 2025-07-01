@@ -1,5 +1,5 @@
 import { writable, derived, type Writable, type Readable } from 'svelte/store';
-import { getAlbums, getAlbumBySlug } from '$lib/utils/supabase.js';
+import { getAlbums, getAlbumBySlug } from '$lib/utils/supabase';
 import type { Album } from '$lib/types/database';
 
 // Albums store - holds all albums data

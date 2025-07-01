@@ -1,6 +1,6 @@
 <script>
   import { page } from '$app/stores';
-  import { albumsCount, totalPhotosCount } from '$lib/stores/albums.js';
+  import { albumsCount, totalPhotosCount } from '$lib/stores/albums';
 
   // Props
   export let showStats = true;

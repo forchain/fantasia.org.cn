@@ -16,28 +16,6 @@
     "exactOptionalPropertyTypes": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": false,
-    "noUncheckedIndexedAccess": false,
-    "moduleResolution": "bundler",
-    "target": "ES2022",
-    "module": "ESNext",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "declaration": false,
-    "declarationMap": false,
-    "incremental": true,
-    "tsBuildInfoFile": ".svelte-kit/tsconfig.tsbuildinfo"
-  },
-  "include": [
-    "src/**/*.d.ts",
-    "src/**/*.ts",
-    "src/**/*.js",
-    "src/**/*.svelte",
-    "tests/**/*.ts",
-    "tests/**/*.js"
-  ],
-  "exclude": [
-    "node_modules/**",
-    ".svelte-kit/**",
-    "build/**",
-    "dist/**"
-  ]
+    "noUncheckedIndexedAccess": false
+  }
 } 

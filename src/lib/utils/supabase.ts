@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
-import type { Album, Photo, ImageOptimizationOptions } from '$lib/types/database';
+import type { Album, ImageOptimizationOptions } from '$lib/types/database';
 
 // Initialize Supabase client
 export const supabase: SupabaseClient = createClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY, {
@@ -96,21 +96,24 @@ export function getOptimizedImageUrl(path: string, options: ImageOptimizationOpt
 
   const {
     width = 800,
-    height = null,
-    quality = 80,
-    format = 'webp'
+    height,
+    quality = 80
   } = options;
 
   try {
+    const transformOptions: any = {
+      width,
+      quality
+    };
+
+    if (height !== null && height !== undefined) {
+      transformOptions.height = height;
+    }
+
     const { data } = supabase.storage
       .from('album-images')
       .getPublicUrl(path, {
-        transform: {
-          width,
-          height,
-          quality,
-          format
-        }
+        transform: transformOptions
       });
 
     return data.publicUrl;

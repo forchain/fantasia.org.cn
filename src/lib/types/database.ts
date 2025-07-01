@@ -36,7 +36,6 @@ export interface ImageOptimizationOptions {
   width?: number;
   height?: number | null;
   quality?: number;
-  format?: 'webp' | 'jpg' | 'png' | 'avif';
 }
 
 export interface NavigationInfo {

@@ -10,9 +10,9 @@
     previousPhoto,
     handleKeyNavigation,
     setPhotoLoading
-  } from '$lib/stores/lightbox.js';
-  import { getFullImageUrl } from '$lib/utils/supabase.js';
-  import { preloadImage } from '$lib/utils/imageHelpers.js';
+  } from '$lib/stores/lightbox';
+  import { getFullImageUrl } from '$lib/utils/supabase';
+  import { preloadImage } from '$lib/utils/imageHelpers';
   import { ChevronLeft, ChevronRight, X, Download, ZoomIn, ZoomOut } from 'lucide-svelte';
 
   // Local state
@@ -183,17 +183,21 @@
   }
 
   onMount(() => {
-    // Add global event listeners
-    document.addEventListener('keydown', handleKeyNavigation);
-    
-    return () => {
-      document.removeEventListener('keydown', handleKeyNavigation);
-    };
+    // Add global event listeners only in browser
+    if (typeof document !== 'undefined') {
+      document.addEventListener('keydown', handleKeyNavigation);
+      
+      return () => {
+        document.removeEventListener('keydown', handleKeyNavigation);
+      };
+    }
   });
 
   onDestroy(() => {
-    // Clean up any remaining event listeners
-    document.removeEventListener('keydown', handleKeyNavigation);
+    // Clean up any remaining event listeners only in browser
+    if (typeof document !== 'undefined') {
+      document.removeEventListener('keydown', handleKeyNavigation);
+    }
   });
 </script>
 
@@ -203,11 +207,13 @@
     bind:this={modalElement}
     class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 animate-fade-in"
     on:click={handleBackdropClick}
+    on:keydown={(e) => e.key === 'Escape' && closeLightbox()}
     on:mousemove={handleMouseMove}
     on:mouseup={handleMouseUp}
     role="dialog"
     aria-modal="true"
     aria-labelledby="lightbox-title"
+    tabindex="0"
   >
     <!-- Close button -->
     <button
@@ -255,21 +261,34 @@
           <p class="text-lg">Failed to load image</p>
         </div>
       {:else}
-        <!-- Main image -->
-        <img
-          bind:this={imageElement}
-          src={fullImageUrl}
-          alt={$currentPhoto.title || $currentPhoto.description || 'Photo'}
-          class="max-w-full max-h-full object-contain transition-all duration-300 cursor-move"
-          class:cursor-zoom-in={!canZoom || zoomLevel === 1}
-          class:cursor-move={zoomLevel > 1}
-          style="transform: scale({zoomLevel}) translate({panPosition.x / zoomLevel}px, {panPosition.y / zoomLevel}px)"
-          on:load={handleImageLoad}
-          on:error={handleImageError}
+        <!-- Main image container -->
+        <div
+          class="max-w-full max-h-full flex items-center justify-center"
           on:wheel={handleWheel}
           on:mousedown={handleMouseDown}
-          draggable="false"
-        />
+          role="button"
+          tabindex="0"
+          aria-label="Zoomable image - use mouse wheel to zoom, drag to pan"
+          on:keydown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              if (zoomLevel === 1) zoomIn(); else resetZoom();
+            }
+          }}
+        >
+          <img
+            bind:this={imageElement}
+            src={fullImageUrl}
+            alt={$currentPhoto.title || $currentPhoto.description || 'Photo'}
+            class="max-w-full max-h-full object-contain transition-all duration-300"
+            class:cursor-zoom-in={!canZoom || zoomLevel === 1}
+            class:cursor-move={zoomLevel > 1}
+            style="transform: scale({zoomLevel}) translate({panPosition.x / zoomLevel}px, {panPosition.y / zoomLevel}px)"
+            on:load={handleImageLoad}
+            on:error={handleImageError}
+            draggable="false"
+          />
+        </div>
       {/if}
     </div>
 

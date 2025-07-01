@@ -77,14 +77,12 @@
     <!-- Albums grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {#each $albums as album (album.id)}
-        <article 
-          class="album-card group cursor-pointer"
-          on:click={() => handleAlbumClick(album.slug)}
-          on:keydown={(e) => e.key === 'Enter' && handleAlbumClick(album.slug)}
-          tabindex="0"
-          role="button"
-          aria-label="View album {album.title}"
-        >
+        <article class="album-card group">
+          <button
+            class="w-full text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-gallery-500 focus:ring-offset-2 rounded-lg"
+            on:click={() => handleAlbumClick(album.slug)}
+            aria-label="View album {album.title}"
+          >
           <!-- Album cover image -->
           <div class="relative aspect-square overflow-hidden rounded-lg bg-gallery-100">
             {#if album.cover_image_url}
@@ -127,6 +125,7 @@
               <span>{album.photo_count || 0} photos</span>
             </div>
           </div>
+          </button>
         </article>
       {/each}
     </div>
