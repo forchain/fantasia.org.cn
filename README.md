@@ -228,6 +228,33 @@ npm run lint         # Lint code
 npm run format       # Format code with Prettier
 ```
 
+### Build Output
+
+After running `npm run build`, the compiled project files are generated in the following locations:
+
+```
+.svelte-kit/                 # Development temporary files
+├── generated/               # Auto-generated types and files
+├── ambient.d.ts            # Ambient type definitions  
+└── tsconfig.json           # Generated TypeScript config
+
+.vercel/output/             # Production build output (Vercel deployment)
+├── config.json             # Vercel deployment configuration
+├── static/                 # Static assets (CSS, JS, images)
+│   ├── _app/               # Application bundles
+│   │   ├── immutable/      # Cacheable assets with hashes
+│   │   └── version.json    # Build version info
+│   └── [static-files]      # Public static files
+└── functions/              # Server-side functions (if any)
+    └── [api-routes]        # API route handlers
+```
+
+**Key directories:**
+- `.svelte-kit/`: Development files, should not be committed to version control
+- `.vercel/output/`: Production build for Vercel deployment
+- `.vercel/output/static/`: Contains all static assets with optimized bundles
+- `.vercel/output/functions/`: Server-side code for API routes and SSR
+
 ### Code Style
 
 - Comments and logs in English only
