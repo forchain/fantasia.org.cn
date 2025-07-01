@@ -32,6 +32,78 @@ This is a personal gallery website (Fantasia) built with SvelteKit and TypeScrip
 - Follow API best practices - suggest improvements for non-standard developer designs
 - Update README if modifications require documentation changes
 
+## TypeScript Migration Best Practices
+
+### Migration Sequence (CRITICAL ORDER)
+**Follow this exact sequence to avoid breaking changes:**
+
+1. **Phase 1: Configuration Setup**
+   ```bash
+   # Update package.json with TypeScript dependencies
+   # Create tsconfig.json (let SvelteKit generate base first)
+   # Update svelte.config.js for TypeScript support
+   npm run dev # Let SvelteKit generate .svelte-kit/tsconfig.json
+   ```
+
+2. **Phase 2: Type Definitions** 
+   ```bash
+   # Create src/app.d.ts
+   # Create src/lib/types/database.ts with all interfaces
+   # Define component prop types
+   ```
+
+3. **Phase 3: Update Imports BEFORE Conversion**
+   ```bash
+   # Update ALL import paths to remove .js extensions
+   # Fix ALL component import references
+   # Test that imports resolve correctly
+   ```
+
+4. **Phase 4: Convert Files Incrementally**
+   ```bash
+   # Convert .js to .ts files one by one
+   # Add TypeScript types to each file
+   # Test after each conversion
+   ```
+
+5. **Phase 5: Clean Up and Validate**
+   ```bash
+   # Remove old .js files only after all imports are fixed
+   # Clean up unused code and CSS
+   # Run full type checking and accessibility audit
+   ```
+
+### Critical Error Prevention
+```typescript
+// ✅ DO: Update imports first, then convert files
+// 1. Change all imports from '.js' to no extension
+import { albums } from '$lib/stores/albums'; // Remove .js
+
+// 2. Then convert albums.js to albums.ts
+// 3. Add TypeScript types
+
+// ❌ DON'T: Delete .js files before fixing imports
+// This causes "module not found" errors
+```
+
+### SSR Compatibility Checklist
+```typescript
+// ✅ Always check for browser environment
+if (typeof document !== 'undefined') {
+  document.addEventListener('keydown', handler);
+}
+
+// ✅ Use onMount for browser-only code
+onMount(() => {
+  if (typeof window !== 'undefined') {
+    // Browser-only logic
+  }
+});
+
+// ❌ Never use browser APIs directly in component top-level
+document.addEventListener('keydown', handler); // SSR will fail
+```
+
 ## Project Structure
 
 ### Core Configuration
@@ -85,6 +157,26 @@ npm run build
 npm run preview
 ```
 
+## Quality Assurance During Migration
+
+### Testing Protocol
+```bash
+# After each major change, run:
+npm run check      # TypeScript validation
+npm run dev        # Test SSR and client-side
+# Manual testing:  # Check accessibility
+# Browser console: # Check for runtime errors
+```
+
+### Common Warning Fixes
+```typescript
+// Fix Vite plugin warnings:
+// 1. Remove unused CSS selectors
+// 2. Fix A11y violations with proper interactive elements
+// 3. Add SSR checks for browser APIs
+// 4. Clean up unused imports and variables
+```
+
 ## Key Features
 - Responsive Instagram-like photo grid
 - Full-screen lightbox with zoom/pan/navigation
@@ -100,3 +192,6 @@ npm run preview
 - Follow accessibility guidelines in components
 - Optimize images using Supabase transformations
 - Test responsive design on multiple breakpoints
+- **CRITICAL**: Always test SSR compatibility when using browser APIs
+- **CRITICAL**: Follow proper migration sequence to avoid breaking changes
+- **CRITICAL**: Update all imports before converting files to TypeScript

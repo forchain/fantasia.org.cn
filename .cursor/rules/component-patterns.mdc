@@ -30,6 +30,54 @@ import type { Photo, Album } from '$lib/types/database';
 import { albums } from '$lib/stores/albums.js';
 ```
 
+## SSR (Server-Side Rendering) Best Practices
+
+### Browser API Usage
+**CRITICAL**: Always check for browser environment before using browser APIs to prevent SSR errors.
+
+```typescript
+// ✅ Correct: Check for browser environment
+onMount(() => {
+  if (typeof document !== 'undefined') {
+    document.addEventListener('keydown', handleKeyNavigation);
+    return () => document.removeEventListener('keydown', handleKeyNavigation);
+  }
+});
+
+// ✅ Correct: Safe DOM access
+function handleClick() {
+  if (typeof document !== 'undefined') {
+    document.getElementById('target')?.scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// ❌ Incorrect: Direct browser API usage
+onMount(() => {
+  document.addEventListener('keydown', handleKeyNavigation); // Will fail in SSR
+});
+```
+
+### Common SSR-Safe Patterns
+```typescript
+// Check for window object
+if (typeof window !== 'undefined') {
+  window.localStorage.setItem('key', 'value');
+}
+
+// Check for navigator
+if (typeof navigator !== 'undefined') {
+  navigator.clipboard.writeText('text');
+}
+
+// Use browser import in onMount
+onMount(async () => {
+  if (typeof window !== 'undefined') {
+    const { default: SomeLibrary } = await import('browser-only-library');
+    // Use library
+  }
+});
+```
+
 ## Component Categories
 
 ### Layout Components
@@ -67,6 +115,43 @@ $: thumbnailUrl = getThumbnailUrl(photo.image_url);
 
 ## Accessibility Patterns
 
+### Interactive Element Rules
+**CRITICAL**: Follow proper accessibility patterns to avoid A11y violations.
+
+```typescript
+// ✅ Correct: Use button for interactive elements
+<article class="card">
+  <button
+    class="w-full text-left focus:outline-none focus:ring-2 focus:ring-gallery-500"
+    on:click={handleClick}
+    aria-label="Descriptive action label"
+  >
+    <!-- Card content -->
+  </button>
+</article>
+
+// ✅ Correct: Interactive container for complex interactions
+<div
+  role="button"
+  tabindex="0"
+  aria-label="Zoomable image - use mouse wheel to zoom"
+  on:click={handleClick}
+  on:keydown={(e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      handleClick();
+    }
+  }}
+>
+  <img src={url} alt="Description" />
+</div>
+
+// ❌ Incorrect: Interactive events on non-interactive elements
+<img on:click={handleClick} /> <!-- Fails A11y -->
+<article role="button" on:click={handleClick}> <!-- Invalid role -->
+<div on:click={handleClick}> <!-- Missing keyboard handler -->
+```
+
 ### Keyboard Navigation
 ```svelte
 <article 
@@ -82,6 +167,7 @@ $: thumbnailUrl = getThumbnailUrl(photo.image_url);
 - Always provide meaningful `alt` attributes for images
 - Use proper ARIA labels and roles
 - Ensure keyboard navigation works for all interactive elements
+- Add `aria-label` for buttons without visible text
 
 ## State Management Integration
 
@@ -149,3 +235,22 @@ Use reactive statements for computed values:
 $: dimensions = getImageDimensions(photo);
 $: shouldLoad = !lazyLoad || intersected;
 ```
+
+## Code Cleanup Best Practices
+
+### Remove Unused Code
+Always clean up unused code during refactoring:
+```typescript
+// Remove unused CSS selectors that cause warnings
+// Remove unused imports
+// Remove unused functions and variables
+// Clean up commented code
+```
+
+### TypeScript Conversion Checklist
+1. ✅ Update all import paths (remove .js extensions)
+2. ✅ Add TypeScript types to all props and functions  
+3. ✅ Fix SSR issues with browser API checks
+4. ✅ Ensure accessibility compliance
+5. ✅ Clean up unused code and imports
+6. ✅ Test in both development and production builds

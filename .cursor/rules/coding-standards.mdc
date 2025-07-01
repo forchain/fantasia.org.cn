@@ -1,6 +1,6 @@
 ---
-description:
-globs:
+description: 
+globs: 
 alwaysApply: false
 ---
 # Coding Standards and User Requirements
@@ -147,6 +147,76 @@ function processPhoto(photo: any): any {
 }
 ```
 
+## TypeScript Conversion Pitfalls
+
+### Common Migration Errors
+**CRITICAL**: Learn from common mistakes made during TypeScript conversions.
+
+#### 1. Import Path Errors
+```typescript
+// ✅ Correct: Remove file extensions after TypeScript conversion
+import { albums, loadAlbums } from '$lib/stores/albums';
+import { getThumbnailUrl } from '$lib/utils/supabase';
+
+// ❌ Incorrect: Leaving .js extensions causes module not found errors
+import { albums, loadAlbums } from '$lib/stores/albums.js';
+import { getThumbnailUrl } from '$lib/utils/supabase.js';
+```
+
+#### 2. TypeScript Configuration Issues
+```json
+// ✅ Correct: Let SvelteKit generate base config first
+{
+  "extends": "./.svelte-kit/tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true
+  }
+}
+
+// ❌ Incorrect: Trying to extend non-existent config
+{
+  "extends": "./.svelte-kit/tsconfig.json", // File doesn't exist yet
+  "compilerOptions": { ... }
+}
+```
+
+#### 3. Type Mismatches with APIs
+```typescript
+// ✅ Correct: Handle null vs undefined properly
+interface ImageOptions {
+  width?: number;
+  height?: number | null; // Some APIs return null instead of undefined
+  quality?: number;
+}
+
+function getOptimizedUrl(path: string, options: ImageOptions = {}): string {
+  const transformOptions: any = { width: options.width, quality: options.quality };
+  
+  // Handle null vs undefined
+  if (options.height !== null && options.height !== undefined) {
+    transformOptions.height = options.height;
+  }
+  
+  return supabase.storage.getPublicUrl(path, { transform: transformOptions });
+}
+
+// ❌ Incorrect: Type conflicts
+function getOptimizedUrl(path: string, options: { height?: number } = {}): string {
+  return supabase.storage.getPublicUrl(path, {
+    transform: { height: options.height } // Error: null not assignable to number | undefined
+  });
+}
+```
+
+### Conversion Best Practices
+1. **Update imports FIRST** before deleting old files
+2. **Test after each major change** to catch issues early
+3. **Check SSR compatibility** when using browser APIs
+4. **Validate accessibility** when changing interactive elements
+5. **Clean up unused code** during conversion
+6. **Run type checking frequently** with `npm run check`
+
 ## Performance Standards
 
 ### Image Optimization
@@ -189,4 +259,32 @@ try {
   console.error('Operation failed:', error);
   throw new Error(errorMessage);
 }
+```
+
+## Debugging Common Issues
+
+### Vite Plugin Warnings
+```typescript
+// Fix unused CSS selectors
+// Remove or comment out unused styles
+.unused-class { } /* Delete this */
+
+// Fix A11y warnings by using proper interactive elements
+<button on:click={handler}>Click me</button> // ✅
+<div on:click={handler}>Click me</div> // ❌
+```
+
+### SSR Errors
+```typescript
+// Always check for browser environment
+if (typeof document !== 'undefined') {
+  document.addEventListener('event', handler);
+}
+
+// Use onMount for browser-only code
+onMount(() => {
+  if (typeof window !== 'undefined') {
+    // Browser-only logic
+  }
+});
 ```
