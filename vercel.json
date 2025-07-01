@@ -1,4 +1,5 @@
 {
+  "runtime": "nodejs18.x",
   "regions": ["sin1"],
   "headers": [
     {
