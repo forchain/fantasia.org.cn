@@ -1,0 +1,151 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Svelte Component Development Patterns
+
+## Component Structure Standards
+
+### TypeScript in Components
+Always use `<script lang="ts">` for all Svelte components. Reference [src/lib/components/PhotoCard.svelte](mdc:src/lib/components/PhotoCard.svelte) as an example of proper TypeScript integration.
+
+### Props Definition
+```typescript
+// Define props with explicit types
+export let photo: Photo;
+export let albumPhotos: Photo[] = [];
+export let index: number = 0;
+export let lazyLoad: boolean = true;
+```
+
+### Import Patterns
+```typescript
+// Correct: Import without file extensions
+import { albums, loadAlbums } from '$lib/stores/albums';
+import { getThumbnailUrl } from '$lib/utils/supabase';
+import type { Photo, Album } from '$lib/types/database';
+
+// Incorrect: Don't use .js or .ts extensions
+import { albums } from '$lib/stores/albums.js';
+```
+
+## Component Categories
+
+### Layout Components
+- [src/lib/components/Navigation.svelte](mdc:src/lib/components/Navigation.svelte) - Site-wide navigation
+- [src/routes/+layout.svelte](mdc:src/routes/+layout.svelte) - Main application layout
+
+### Data Display Components
+- [src/lib/components/AlbumGrid.svelte](mdc:src/lib/components/AlbumGrid.svelte) - Grid layout for albums with loading states
+- [src/lib/components/PhotoCard.svelte](mdc:src/lib/components/PhotoCard.svelte) - Individual photo display with lazy loading
+
+### Interactive Components
+- [src/lib/components/ImageLightbox.svelte](mdc:src/lib/components/ImageLightbox.svelte) - Modal lightbox with keyboard navigation
+
+## Performance Patterns
+
+### Lazy Loading
+Implement intersection observer pattern as shown in [src/lib/components/PhotoCard.svelte](mdc:src/lib/components/PhotoCard.svelte):
+```typescript
+import { createImageObserver } from '$lib/utils/imageHelpers';
+
+onMount(() => {
+  if (lazyLoad && imageElement) {
+    const observer = createImageObserver(handleIntersection);
+    observer.observe(imageElement);
+    return () => observer.disconnect();
+  }
+});
+```
+
+### Image Optimization
+Use Supabase image transformations from [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts):
+```typescript
+$: thumbnailUrl = getThumbnailUrl(photo.image_url);
+```
+
+## Accessibility Patterns
+
+### Keyboard Navigation
+```svelte
+<article 
+  on:click={handleClick}
+  on:keydown={(e) => e.key === 'Enter' && handleClick()}
+  tabindex="0"
+  role="button"
+  aria-label="Descriptive label"
+>
+```
+
+### Screen Reader Support
+- Always provide meaningful `alt` attributes for images
+- Use proper ARIA labels and roles
+- Ensure keyboard navigation works for all interactive elements
+
+## State Management Integration
+
+### Store Usage
+Import and use stores from [src/lib/stores/](mdc:src/lib/stores):
+```typescript
+import { albums, albumsLoading, loadAlbums } from '$lib/stores/albums';
+import { openLightbox } from '$lib/stores/lightbox';
+
+// Reactive statements for store data
+$: displayedAlbums = $albums.slice(0, maxItems);
+```
+
+### Error Handling
+Always handle loading and error states:
+```svelte
+{#if $albumsLoading}
+  <!-- Loading skeleton -->
+{:else if $albumsError}
+  <!-- Error state with retry -->
+{:else}
+  <!-- Content -->
+{/if}
+```
+
+## Styling Conventions
+
+### Tailwind Classes
+Use the gallery color scheme defined in [tailwind.config.js](mdc:tailwind.config.js):
+```svelte
+<div class="bg-gallery-100 text-gallery-900 hover:bg-gallery-200">
+```
+
+### Component-Specific Styles
+```svelte
+<style>
+  .component-class {
+    @apply transform transition-all duration-200;
+  }
+  
+  .component-class:focus {
+    @apply outline-none ring-2 ring-gallery-500;
+  }
+</style>
+```
+
+## Event Handling Patterns
+
+### Function Signatures
+Always specify return types for event handlers:
+```typescript
+function handleClick(): void {
+  // Handle click
+}
+
+function handleSubmit(event: Event): void {
+  event.preventDefault();
+  // Handle form submission
+}
+```
+
+### Reactive Statements
+Use reactive statements for computed values:
+```typescript
+$: dimensions = getImageDimensions(photo);
+$: shouldLoad = !lazyLoad || intersected;
+```

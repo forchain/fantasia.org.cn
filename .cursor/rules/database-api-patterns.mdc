@@ -1,0 +1,205 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Database and API Patterns
+
+## Supabase Integration
+
+### Client Configuration
+Use the configured client from [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts):
+```typescript
+import { supabase } from '$lib/utils/supabase';
+```
+
+### Type Safety
+Always use types from [src/lib/types/database.ts](mdc:src/lib/types/database.ts):
+```typescript
+import type { Album, Photo } from '$lib/types/database';
+
+export async function getAlbums(): Promise<Album[]> {
+  // Implementation
+}
+```
+
+## Database Schema Reference
+
+### Tables Structure
+Reference [database/schema.sql](mdc:database/schema.sql) for complete schema:
+- `albums` - Photo album collections
+- `photos` - Individual photos within albums
+
+### Key Columns
+```sql
+-- Albums table
+id (uuid), title (text), description (text), slug (text), 
+cover_image_url (text), is_published (boolean), sort_order (integer)
+
+-- Photos table  
+id (uuid), album_id (uuid), title (text), description (text),
+image_url (text), thumbnail_url (text), width (integer), height (integer)
+```
+
+## Data Fetching Patterns
+
+### Albums Management
+Use functions from [src/lib/stores/albums.ts](mdc:src/lib/stores/albums.ts):
+```typescript
+import { loadAlbums, loadAlbum } from '$lib/stores/albums';
+
+// Load all albums
+await loadAlbums();
+
+// Load specific album by slug
+await loadAlbum('album-slug');
+```
+
+### Query Patterns
+Follow patterns in [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts):
+```typescript
+// Select with relationships
+const { data, error } = await supabase
+  .from('albums')
+  .select(`
+    id, title, description, slug,
+    photos!inner(id)
+  `)
+  .eq('is_published', true)
+  .order('sort_order', { ascending: true });
+```
+
+### Error Handling
+Always handle Supabase errors properly:
+```typescript
+try {
+  const { data, error } = await supabase.from('table').select('*');
+  
+  if (error) {
+    console.error('Database error:', error);
+    return [];
+  }
+  
+  return data as TypedResult[];
+} catch (error) {
+  console.error('Unexpected error:', error);
+  return [];
+}
+```
+
+## Image Storage Patterns
+
+### Image URLs
+Use helper functions for image optimization:
+```typescript
+import { getOptimizedImageUrl, getThumbnailUrl, getFullImageUrl } from '$lib/utils/supabase';
+
+// Get optimized image with custom options
+const optimizedUrl = getOptimizedImageUrl(imagePath, {
+  width: 800,
+  height: 600,
+  quality: 80,
+  format: 'webp'
+});
+
+// Get predefined thumbnail
+const thumbnailUrl = getThumbnailUrl(imagePath);
+```
+
+### Storage Buckets
+- `album-images` - Original uploaded images
+- Image transformations handled automatically by Supabase
+
+## State Management Patterns
+
+### Store Structure
+Follow patterns from [src/lib/stores/albums.ts](mdc:src/lib/stores/albums.ts):
+```typescript
+// Data stores
+export const albums: Writable<Album[]> = writable([]);
+export const currentAlbum: Writable<Album | null> = writable(null);
+
+// Loading states
+export const albumsLoading: Writable<boolean> = writable(false);
+export const albumsError: Writable<string | null> = writable(null);
+
+// Derived stores
+export const albumsCount: Readable<number> = derived(albums, ($albums) => $albums.length);
+```
+
+### Async Operations
+```typescript
+export async function loadAlbums(): Promise<void> {
+  albumsLoading.set(true);
+  albumsError.set(null);
+  
+  try {
+    const data = await getAlbums();
+    albums.set(data);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    albumsError.set(errorMessage);
+    albums.set([]);
+  } finally {
+    albumsLoading.set(false);
+  }
+}
+```
+
+## Security Patterns
+
+### Row Level Security
+All database operations respect RLS policies defined in [database/schema.sql](mdc:database/schema.sql):
+- Only published albums are accessible
+- Read-only access for public users
+
+### Environment Variables
+Never expose sensitive keys:
+```typescript
+// Correct: Use public environment variables
+import { PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_ANON_KEY } from '$env/static/public';
+
+// Incorrect: Don't use service role key in frontend
+// import { SUPABASE_SERVICE_ROLE_KEY } from '$env/static/private';
+```
+
+## Performance Optimization
+
+### Query Optimization
+```typescript
+// Good: Select only needed columns
+.select('id, title, description, cover_image_url')
+
+// Good: Use pagination for large datasets
+.range(offset, offset + limit)
+
+// Good: Filter at database level
+.eq('is_published', true)
+```
+
+### Image Optimization
+```typescript
+// Use appropriate sizes for different use cases
+const thumbnailUrl = getOptimizedImageUrl(path, { width: 400, quality: 70 });
+const fullUrl = getOptimizedImageUrl(path, { width: 1920, quality: 90 });
+```
+
+## Data Validation
+
+### Input Validation
+Always validate data before database operations:
+```typescript
+if (!slug || typeof slug !== 'string') {
+  throw new Error('Invalid slug provided');
+}
+```
+
+### Type Guards
+```typescript
+function isValidAlbum(data: any): data is Album {
+  return data && 
+         typeof data.id === 'string' && 
+         typeof data.title === 'string' &&
+         typeof data.slug === 'string';
+}
+```

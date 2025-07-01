@@ -1,0 +1,102 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# TypeScript SvelteKit Gallery Project Rules
+
+## Project Overview
+This is a personal gallery website (Fantasia) built with SvelteKit and TypeScript. It's an Instagram-like photo sharing platform deployed on Vercel with Supabase backend.
+
+## Tech Stack
+- **Frontend**: SvelteKit + TypeScript
+- **Backend**: Supabase (PostgreSQL + Storage)
+- **Styling**: Tailwind CSS
+- **Deployment**: Vercel
+- **Domain**: fantasia.org.cn
+
+## Code Standards
+
+### Language Requirements
+- All code comments and logs MUST be in English only, even if prompts are in Chinese
+- Use TypeScript for all new files (`.ts` for utilities, `<script lang="ts">` for Svelte components)
+- Follow strict TypeScript configuration defined in [tsconfig.json](mdc:tsconfig.json)
+
+### File Structure Rules
+- Keep single files under 200 lines - refactor into multiple modules if exceeded
+- Keep single functions under 100 lines - split into multiple functions if needed
+- Don't modify unrelated logic when making specific changes
+
+### API and URL Conventions
+- Use hyphens "-" in URLs instead of underscores "_" unless required by naming standards
+- Follow API best practices - suggest improvements for non-standard developer designs
+- Update README if modifications require documentation changes
+
+## Project Structure
+
+### Core Configuration
+- [package.json](mdc:package.json) - Dependencies and scripts with TypeScript support
+- [tsconfig.json](mdc:tsconfig.json) - Strict TypeScript configuration
+- [svelte.config.js](mdc:svelte.config.js) - SvelteKit config with Vercel adapter
+- [tailwind.config.js](mdc:tailwind.config.js) - Custom gallery color scheme
+- [vite.config.js](mdc:vite.config.js) - Build optimization
+
+### Type Definitions
+- [src/app.d.ts](mdc:src/app.d.ts) - SvelteKit global types
+- [src/lib/types/database.ts](mdc:src/lib/types/database.ts) - Database models and component prop types
+
+### Backend Integration
+- [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts) - Supabase client and database functions
+- [database/schema.sql](mdc:database/schema.sql) - Database schema with RLS policies
+
+### State Management
+- [src/lib/stores/albums.ts](mdc:src/lib/stores/albums.ts) - Album data management with TypeScript
+- [src/lib/stores/lightbox.ts](mdc:src/lib/stores/lightbox.ts) - Lightbox state management with TypeScript
+
+### Utilities
+- [src/lib/utils/imageHelpers.ts](mdc:src/lib/utils/imageHelpers.ts) - Image processing utilities
+- [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts) - Database operations and image optimization
+
+### Components
+- [src/lib/components/AlbumGrid.svelte](mdc:src/lib/components/AlbumGrid.svelte) - Instagram-style album grid
+- [src/lib/components/PhotoCard.svelte](mdc:src/lib/components/PhotoCard.svelte) - Individual photo cards with lazy loading
+- [src/lib/components/ImageLightbox.svelte](mdc:src/lib/components/ImageLightbox.svelte) - Full-screen image viewer
+- [src/lib/components/Navigation.svelte](mdc:src/lib/components/Navigation.svelte) - Site navigation
+
+### Pages
+- [src/routes/+layout.svelte](mdc:src/routes/+layout.svelte) - Main layout with navigation and lightbox
+- [src/routes/+page.svelte](mdc:src/routes/+page.svelte) - Homepage with hero and album grid
+- [src/routes/album/[slug]/+page.svelte](mdc:src/routes/album/[slug]/+page.svelte) - Album detail page
+- [src/routes/about/+page.svelte](mdc:src/routes/about/+page.svelte) - About page
+
+## Development Commands
+
+```bash
+# Development
+npm run dev
+
+# TypeScript checking
+npm run check
+npm run check:watch
+npm run type-check
+
+# Building
+npm run build
+npm run preview
+```
+
+## Key Features
+- Responsive Instagram-like photo grid
+- Full-screen lightbox with zoom/pan/navigation
+- Image optimization with multiple formats
+- Lazy loading and performance optimization
+- SEO optimization with meta tags
+- Accessibility features (ARIA, keyboard navigation)
+
+## Best Practices
+- Always use TypeScript types from [src/lib/types/database.ts](mdc:src/lib/types/database.ts)
+- Import utilities without file extensions (e.g., `from '$lib/utils/supabase'`)
+- Use proper error handling in async functions
+- Follow accessibility guidelines in components
+- Optimize images using Supabase transformations
+- Test responsive design on multiple breakpoints

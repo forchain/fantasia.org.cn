@@ -1,0 +1,192 @@
+---
+description:
+globs:
+alwaysApply: false
+---
+# Coding Standards and User Requirements
+
+## Language Requirements
+
+### Comments and Logs
+- **CRITICAL**: All code comments and logs MUST be in English only
+- This applies even if the user prompt or request is in Chinese
+- Documentation in code should be clear and professional English
+
+```typescript
+// ✅ Correct: English comments
+/**
+ * Handle photo click to open lightbox
+ * @param photo - Photo object to display
+ */
+function handlePhotoClick(photo: Photo): void {
+  console.log('Opening lightbox for photo:', photo.title);
+}
+
+// ❌ Incorrect: Chinese comments
+/**
+ * 处理照片点击以打开灯箱
+ */
+function handlePhotoClick(photo: Photo): void {
+  console.log('打开照片灯箱:', photo.title);
+}
+```
+
+## File Structure Standards
+
+### File Size Limits
+- **Single file maximum**: 200 lines
+- If a file exceeds 200 lines, refactor into multiple modules
+- **Single function maximum**: 100 lines  
+- If a function exceeds 100 lines, split into multiple functions
+
+### Refactoring Guidelines
+```typescript
+// ✅ Good: Functions under 100 lines
+function processImageUpload(file: File): Promise<string> {
+  // Implementation under 100 lines
+}
+
+function validateImageFile(file: File): boolean {
+  // Validation logic
+}
+
+// ❌ Bad: Monolithic function over 100 lines
+function handleImageProcessingAndUploadAndValidation(file: File): Promise<string> {
+  // 150+ lines of mixed concerns
+}
+```
+
+## URL and API Conventions
+
+### URL Structure
+- **Use hyphens `-` in URLs**, not underscores `_`
+- Exception: When naming conventions specifically require underscores
+
+```typescript
+// ✅ Correct: Hyphens in URLs
+/album/my-vacation-photos
+/api/album-data
+const slug = 'summer-trip-2024';
+
+// ❌ Incorrect: Underscores in URLs  
+/album/my_vacation_photos
+/api/album_data
+const slug = 'summer_trip_2024';
+```
+
+### API Best Practices
+- Follow RESTful conventions
+- Suggest improvements when encountering non-standard API designs
+- Provide constructive feedback on developer implementations
+
+## Documentation Requirements
+
+### README Updates
+- Update [README.md](mdc:README.md) when modifications require documentation changes
+- Keep installation instructions current
+- Update feature lists when adding functionality
+- Maintain accurate project structure documentation
+
+### Code Documentation  
+```typescript
+/**
+ * Get optimized image URL from Supabase storage
+ * @param path - Image path in storage
+ * @param options - Transformation options
+ * @returns Optimized image URL
+ */
+export function getOptimizedImageUrl(
+  path: string, 
+  options: ImageOptimizationOptions = {}
+): string {
+  // Implementation
+}
+```
+
+## Scope Management
+
+### Change Boundaries
+- **Don't modify unrelated logic** when making specific changes
+- Focus on the requested change only
+- Avoid scope creep in implementations
+
+```typescript
+// ✅ Good: Focused change for image optimization
+function optimizeImage(url: string): string {
+  // Only modify image optimization logic
+  return getOptimizedImageUrl(url, { quality: 80 });
+}
+
+// ❌ Bad: Adding unrelated features during optimization task
+function optimizeImage(url: string): string {
+  // Don't add analytics tracking when only asked for optimization
+  trackImageView(url); // Unrelated to the task
+  return getOptimizedImageUrl(url, { quality: 80 });
+}
+```
+
+## TypeScript Enforcement
+
+### Strict Configuration
+Follow the strict TypeScript configuration in [tsconfig.json](mdc:tsconfig.json):
+- `strict: true`
+- `noImplicitAny: true`
+- `noImplicitReturns: true`
+- `noUnusedLocals: true`
+
+### Type Safety
+```typescript
+// ✅ Correct: Explicit types
+function processPhoto(photo: Photo): Promise<Photo> {
+  return processImageData(photo);
+}
+
+// ❌ Incorrect: Any types or missing types
+function processPhoto(photo: any): any {
+  return processImageData(photo);
+}
+```
+
+## Performance Standards
+
+### Image Optimization
+Use Supabase transformations from [src/lib/utils/supabase.ts](mdc:src/lib/utils/supabase.ts):
+```typescript
+// Appropriate sizes for different contexts
+const thumbnail = getOptimizedImageUrl(path, { width: 400 });
+const hero = getOptimizedImageUrl(path, { width: 1200 });
+const fullRes = getOptimizedImageUrl(path, { width: 1920 });
+```
+
+### Component Efficiency
+- Implement lazy loading for images
+- Use intersection observers for performance
+- Follow patterns from [src/lib/components/PhotoCard.svelte](mdc:src/lib/components/PhotoCard.svelte)
+
+## Quality Assurance
+
+### Development Commands
+Run these commands before committing:
+```bash
+# Type checking
+npm run check
+
+# Linting
+npm run lint
+
+# Format code
+npm run format
+```
+
+### Error Handling
+Always provide comprehensive error handling:
+```typescript
+try {
+  const result = await riskyOperation();
+  return result;
+} catch (error) {
+  const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+  console.error('Operation failed:', error);
+  throw new Error(errorMessage);
+}
+```
